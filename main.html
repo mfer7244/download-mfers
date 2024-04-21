@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Mfers</title>
+  </head>
+  <body>
+    <section
+      style="width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;"
+    >
+      <p style="font-size: 26px; letter-spacing: 2px; font-weight: bold; text-align: center; color: rgb(255, 177, 97);">
+        Download mfers
+      </p>
+
+      <div style="display: flex; align-items: center;">
+        <label>Start number : </label>
+        <input style="margin-left: 10px; padding: 5px;" id="startNumber" type="number" value="0"/>
+      </div>
+
+      <div style="display: flex; align-items: center; margin-top: 10px;">
+        <label>End number : </label>
+        <input style="margin-left: 10px; padding: 5px;" id="endNumber" type="number"  value="0"/>
+      </div>
+      
+      <div style="display: flex; align-items: center; margin-top: 20px;">
+        <button style="font-size: 17px; font-weight: bold; letter-spacing: 1px; padding: 10px 20px; color: white; background-color:rgb(255, 177, 97); border: unset; border-radius: 5px; box-shadow: 1px 1px 5px #BABABA;" id="btnDownloadImages" onclick="downloadImages()">
+          Download Images
+        </button>
+      </div>
+
+      <div style="display: flex; align-items: center; margin-top: 10px;">
+        <p>Downloading:</p>
+        <p id="pDownloadPercentage" style="margin-left: 10px;">0%</p>
+      </div>
+      
+    </section> 
+    
+    <script src="./jszip.js"></script>
+    <script src="./FileSaver.js"></script>
+    <script>
+      const startNumber = document.getElementById('startNumber');
+      const endNumber = document.getElementById('endNumber');
+      const downloadPercentage = document.getElementById('pDownloadPercentage');
+
+      let zip = new JSZip();
+      let currentNumber = 0;
+
+      const downloadImages = async () => {
+        let start = parseInt(startNumber.value);
+        let end = parseInt(endNumber.value);
+
+        if(start < 0 && end < start){
+          alert('Insert the collect number to start and end index');
+        }
+        
+        currentNumber = start;
+        getImageLinkFromIPFS(start);
+      };
+
+      const getImageLinkFromIPFS = (number) => {
+        fetch('https://ipfs.io/ipfs/QmWiQE65tmpYzcokCheQmng2DCM33DEhjXcPB6PanwpAZo/' + number.toString())
+        .then((response) => {
+            return response.json()
+        })
+        .then((result) => {
+          downloadImage('https://ipfs.io/ipfs/' + result.image.replace('ipfs://', ''), number);
+        })
+        .catch((e) => {
+            console.log(e);
+        })
+      }
+
+      const downloadImage = async (imageSrc, number) => {
+        const image = await fetch(imageSrc);
+        const imageBlog = await image.blob();
+        const imageURL = URL.createObjectURL(imageBlog);
+
+        downloadPercentage.innerText = (((parseInt(number) - parseInt(startNumber.value)) / (parseInt(endNumber.value) - parseInt(startNumber.value))) * 100).toString().slice(0, 5) + '%';
+        zip.file(number.toString() + '.png', imageBlog, {base64: true});
+
+        currentNumber = currentNumber + 1;
+        if (currentNumber <= parseInt(endNumber.value)) {
+          getImageLinkFromIPFS(currentNumber);
+        }
+        else {
+          zip.generateAsync({type:"blob"})
+          .then(function(content) {
+              saveAs(content, "mfers.zip");
+              downloadPercentage.innerText = '0%';
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
