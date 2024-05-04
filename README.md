@@ -2,6 +2,7 @@
 
 ### Brief description
 > You can download images of consecutive numbers of mfers.
+![sample image](https://github.com/mfer7244/download-mfers/blob/main/sample.png?raw=true)
 - It download the images from IPFS.
 - It download the original images of mfers NFT.
 - If you install a lot of images at once, download can be stopped or delayed.
